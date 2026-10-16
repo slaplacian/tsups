@@ -1,5 +1,5 @@
 {
-  "name": "tsups",
+  "name": "@slaplacian/tsups",
   "version": "0.1.0",
   "description": "Cross-platform CLI monitor for TS Shara UPS units (Megatec/Q1 serial protocol)",
   "keywords": [
@@ -37,5 +37,8 @@
   "license": "MIT",
   "dependencies": {
     "serialport": "^13.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

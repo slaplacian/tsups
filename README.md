@@ -28,7 +28,7 @@ Measured on a real unit; handled in `src/serial.js`:
 ## Install
 
 ```sh
-npm install -g tsups
+npm install -g @slaplacian/tsups
 ```
 
 On Linux, add yourself to the `dialout` group (or `uucp` on Arch) to access
