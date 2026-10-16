@@ -1,9 +1,26 @@
+import { readdirSync } from 'node:fs';
 import { SerialPort } from 'serialport';
 import { BAUD_RATE, CMD, isInfoReply } from './protocol.js';
 
-export async function listPorts() {
-  return SerialPort.list();
+// USB serial devices by name. Used on Linux when SerialPort.list() cannot run:
+// it shells out to udevadm, which minimal containers do not have.
+export function scanDevPorts(dir = '/dev', names = readdirSync(dir)) {
+  return names
+    .filter((n) => /^tty(ACM|USB)\d+$/.test(n))
+    .sort()
+    .map((n) => ({ path: `${dir}/${n}` }));
 }
+
+export async function listPorts() {
+  try {
+    return await SerialPort.list();
+  } catch (err) {
+    if (process.platform !== 'linux') throw err;
+    return scanDevPorts();
+  }
+}
+
+export const isPermissionError = (err) => /permission denied|EACCES/i.test(`${err?.code} ${err?.message}`);
 
 // The TS Shara USB interface (STM32 CDC, 0483:5740) holds each reply until the
 // host writes again. A bare CR is ignored by the UPS but releases the reply.
@@ -127,8 +144,11 @@ export class UpsConnection {
 }
 
 // Probe: send "I", accept the port if the reply contains "TS".
+// Throws when no UPS was found but some port could not be opened for lack of
+// permission, since "not found" would hide the real cause.
 export async function detectPort({ match = 'TS', timeout = 3000, log = () => {} } = {}) {
   const ports = await listPorts();
+  const denied = [];
   for (const info of ports) {
     const lower = info.path.toLowerCase();
     if (lower.includes('bluetooth') || lower.includes('blth')) continue;
@@ -139,9 +159,16 @@ export async function detectPort({ match = 'TS', timeout = 3000, log = () => {} 
       if (reply.includes(match)) return { path: info.path, info: reply };
     } catch (err) {
       log(`${info.path}: ${err.message}`);
+      if (isPermissionError(err)) denied.push(info.path);
     } finally {
       await conn.close();
     }
+  }
+  if (denied.length) {
+    throw new Error(
+      `permission denied on ${denied.join(', ')}; add your user to the "dialout" group ` +
+        '(or "uucp" on Arch) and log in again, or run with sudo',
+    );
   }
   return null;
 }
