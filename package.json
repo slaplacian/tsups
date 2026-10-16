@@ -1,0 +1,33 @@
+{
+  "name": "tsups",
+  "version": "0.1.0",
+  "description": "Cross-platform CLI monitor for TS Shara UPS units (Megatec/Q1 serial protocol)",
+  "keywords": [
+    "ups",
+    "megatec",
+    "q1",
+    "ts-shara",
+    "nobreak",
+    "serial",
+    "cli",
+    "monitor"
+  ],
+  "author": "Léo Victor Cruz Vasconcelos",
+  "type": "module",
+  "bin": {
+    "tsups": "src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "serialport": "^13.0.0"
+  }
+}
