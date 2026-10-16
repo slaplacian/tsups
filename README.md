@@ -62,7 +62,7 @@ checks `$UPS_EVENT` (e.g. `LOW_BATTERY`) and runs `shutdown -h +1`.
 - Status bit 6 is reported per the Megatec spec (1 = shutdown pending).
 - Q1 replies with a malformed status field are rejected instead of parsed.
 - `tsups monitor --json` output can be sent to InfluxDB with
-  [`upsflux`](https://www.npmjs.com/package/upsflux).
+  [`upsflux`](https://github.com/slaplacian/upsflux).
 
 ## Development
 

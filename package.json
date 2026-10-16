@@ -13,6 +13,14 @@
     "monitor"
   ],
   "author": "Léo Victor Cruz Vasconcelos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slaplacian/tsups.git"
+  },
+  "homepage": "https://github.com/slaplacian/tsups#readme",
+  "bugs": {
+    "url": "https://github.com/slaplacian/tsups/issues"
+  },
   "type": "module",
   "bin": {
     "tsups": "src/cli.js"
