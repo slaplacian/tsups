@@ -22,6 +22,17 @@ export async function listPorts() {
 
 export const isPermissionError = (err) => /permission denied|EACCES/i.test(`${err?.code} ${err?.message}`);
 
+const isUsbPort = (info) => Boolean(info.vendorId) || /usb|acm/i.test(info.path);
+
+// Names the ports worth fixing: USB ones when there are any (a VM can expose
+// dozens of inaccessible ttyS* ports), otherwise the first few.
+export function describeDenied(ports) {
+  const usb = ports.filter(isUsbPort);
+  const shown = usb.length ? usb : ports.slice(0, 3);
+  const rest = usb.length ? 0 : ports.length - shown.length;
+  return shown.map((p) => p.path).join(', ') + (rest > 0 ? ` and ${rest} more` : '');
+}
+
 // The TS Shara USB interface (STM32 CDC, 0483:5740) holds each reply until the
 // host writes again. A bare CR is ignored by the UPS but releases the reply.
 const KICK = '\r';
@@ -159,14 +170,14 @@ export async function detectPort({ match = 'TS', timeout = 3000, log = () => {} 
       if (reply.includes(match)) return { path: info.path, info: reply };
     } catch (err) {
       log(`${info.path}: ${err.message}`);
-      if (isPermissionError(err)) denied.push(info.path);
+      if (isPermissionError(err)) denied.push(info);
     } finally {
       await conn.close();
     }
   }
   if (denied.length) {
     throw new Error(
-      `permission denied on ${denied.join(', ')}; add your user to the "dialout" group ` +
+      `permission denied on ${describeDenied(denied)}; add your user to the "dialout" group ` +
         '(or "uucp" on Arch) and log in again, or run with sudo',
     );
   }
